@@ -78,7 +78,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Fetching ...");
     let data = ctx.read_holding_registers(0xf56c, 30).await??;
 
-    let data_storage_control_mode = ctx.read_holding_registers(0xf704, 1).await??;
+    let data_storage_control_block = ctx.read_holding_registers(0xf704, 14).await??;
 
     if new_control_mode < 5 {
         println!("Setting new mode");
@@ -89,8 +89,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     ctx.disconnect().await?;
 
     let control_modes: [&str; 5] = ["Disabled", "Maximize Self Consumption", "Time of Use", "Backup Only", "Remote Control"];
-    if data_storage_control_mode[0] < 5 {
-        println!("storage control mode: {}", control_modes[usize::try_from(data_storage_control_mode[0]).unwrap()]);
+    if data_storage_control_block[0] < 5 {
+        println!("storage control mode: {}", control_modes[usize::try_from(data_storage_control_block[0]).unwrap()]);
     } else {
         println!("storage control mode: unknown");
     }
@@ -114,6 +114,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("State: unknown");
     }
     println!("State internal: {}", v_u16_to_u32(&data[28..30].to_vec()));
+    println!("Storage AC charge policy: {}", data_storage_control_block[1]);
+    println!("Storage AC charge limit: {}kWh", v_u16_to_f32(&data_storage_control_block[2..4].to_vec()));
+    println!("Storage backup reserved setting: {}%", v_u16_to_f32(&data_storage_control_block[4..6].to_vec()));
+    let modes: [&str; 8] = ["Off", "Charge excess PV power only", "Charge from PV first, before producing power to the AC", "Charge from PV+AC according to the max battery power", "Maximize export – discharge battery to meet max inverter AC limit", "Discharge to meet loads consumption. Discharging to the grid is not allowed", "unknown", "Maximize self-consumption"];
+    if data_storage_control_block[6] < 8 {
+        println!("Storage charge/discharge default mode: {}", modes[usize::try_from(data_storage_control_block[6]).unwrap()]);
+    } else {
+        println!("Storage charge/discharge default mode: unknown");
+    }
+    println!("remote control command timeout: {}s", v_u16_to_u32(&data_storage_control_block[7..9].to_vec()));
+    println!("remote contol command mode: {}", data_storage_control_block[9]);
+    println!("remote control charge limit: {}W", v_u16_to_f32(&data_storage_control_block[10..12].to_vec()));
+    println!("remote control command discharge limit: {}W", v_u16_to_f32(&data_storage_control_block[12..14].to_vec()));
 
     Ok(())
 }
