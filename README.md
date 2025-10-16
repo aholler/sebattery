@@ -35,7 +35,7 @@ Alexander Holler
 
     user@host:~/privat/sebattery.git$ target/release/sebattery 127.0.0.1:1502
 
-    sebattery v1.0.0
+    sebattery v1.1.0
 
     Fetching ...
     Disconnecting
@@ -53,3 +53,11 @@ Alexander Holler
     Health: 100%
     State: Discharge
     State internal: 3
+    Storage AC charge policy: 1
+    Storage AC charge limit: 0kWh
+    Storage backup reserved setting: 0%
+    Storage charge/discharge default mode: Off
+    remote control command timeout: 3600s
+    remote contol command mode: 65535
+    remote control charge limit: 5000W
+    remote control command discharge limit: 5000W
